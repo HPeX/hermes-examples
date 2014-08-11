@@ -45,6 +45,15 @@ project(hermes-examples)
   set(CMAKE_MODULE_PATH ${CMAKE_HOME_DIRECTORY}/cmake)
   include(CommonTargetProperties)
 
+#JP
+    # PETSc
+      # If PETSc is enabled, PETSC_ROOT and PETSC_ARCH must be set as well;
+      # if PETSc is disabled, PETSC_ROOT and PETSC_ARCH will be ignored.
+      set(WITH_PETSC              NO)
+      set(PETSC_ROOT              /opt/petsc/petsc-3.1-p7)
+      set(PETSC_ARCH              petsc-arch-without-scalar-type)
+#eJP
+
   # For Win64
   if(${CMAKE_CL_64})
     set(WIN64 YES)
@@ -135,6 +144,20 @@ project(hermes-examples)
       add_definitions(-DWITH_BLAS)  
     endif(WITH_UMFPACK OR WITH_PETSC OR WITH_MUMPS OR WITH_TRILINOS OR WITH_SUPERLU)
   endif(MSVC)
+  
+#JP
+  if(WITH_PETSC)
+    find_package(PETSC REQUIRED)
+    # For some header files, PETSc uses the same name for both real and complex
+    # versions (they only reside in different directories), so we can't globally
+    # set the architecture-specific include directory here, but rather on a
+    # per-target basis.
+    include_directories(${PETSC_INCLUDE_DIRS})
+    include_directories(${PETSC_CPLX_INCLUDE_DIRS})
+    set(PETSC_LIBRARIES ${PETSC_CPLX_LIBRARIES})
+  endif(WITH_PETSC)
+#eJP
+
 
   if(WITH_MUMPS)
     find_package(MUMPS REQUIRED)
@@ -210,7 +233,10 @@ project(hermes-examples)
   message("\n-------Solvers-------")
   message("Build with UMFPACK: ${WITH_UMFPACK}")
   message("Build with PARALUTION: ${WITH_PARALUTION}")
-  message("Build with PETSC: !TO_DO!")
+#JP
+  #message("Build with PETSC: !TO_DO!")
+  message("Build with PETSC: ${WITH_PETSC}")
+#eJP
   message("Build with MUMPS: ${WITH_MUMPS}")
   message("Build with SUPERLU${MT}: ${WITH_SUPERLU}")
   message("Build with TRILINOS: ${WITH_TRILINOS}")
